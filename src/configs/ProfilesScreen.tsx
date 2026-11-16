@@ -4,7 +4,7 @@ import {
 } from 'react-native';
 import {
   addManualConfig, addSubscription, listProfiles, refreshSubscription,
-  removeProfile, removeSubscription, type SavedProfile, type SavedSubscription,
+  getSelectedProfile, removeProfile, removeSubscription, selectProfile, type SavedProfile, type SavedSubscription,
 } from './profileStore';
 
 const c = {
@@ -15,8 +15,9 @@ const c = {
 
 type ImportMode = 'config' | 'subscription';
 
-export default function ProfilesScreen() {
+export default function ProfilesScreen({ onSelectProfile }: { onSelectProfile?: () => void }) {
   const [profiles, setProfiles] = useState<SavedProfile[]>([]);
+  const [selectedProfileId, setSelectedProfileId] = useState<string | null>(null);
   const [subscriptions, setSubscriptions] = useState<SavedSubscription[]>([]);
   const [mode, setMode] = useState<ImportMode>('config');
   const [modalOpen, setModalOpen] = useState(false);
@@ -27,9 +28,10 @@ export default function ProfilesScreen() {
   const [error, setError] = useState('');
 
   const reload = useCallback(async () => {
-    const result = await listProfiles();
+    const [result, selected] = await Promise.all([listProfiles(), getSelectedProfile()]);
     setProfiles(result.profiles);
     setSubscriptions(result.subscriptions);
+    setSelectedProfileId(selected?.id ?? null);
   }, []);
 
   useEffect(() => { void reload(); }, [reload]);
@@ -73,6 +75,13 @@ export default function ProfilesScreen() {
     } finally {
       setRefreshingId(null);
     }
+  };
+
+  const chooseProfile = async (profile: SavedProfile) => {
+    await selectProfile(profile.id);
+    setSelectedProfileId(profile.id);
+    setMessage(`«${profile.name}» برای اتصال انتخاب شد.`);
+    onSelectProfile?.();
   };
 
   const removeOne = async (profile: SavedProfile) => {
@@ -143,6 +152,9 @@ export default function ProfilesScreen() {
               <Pressable onPress={() => void removeOne(profile)}><Text style={styles.remove}>×</Text></Pressable>
             </View>
             <Text style={styles.source}>{profile.source === 'subscription' ? 'دریافت‌شده از اشتراک' : 'افزوده‌شده به‌صورت دستی'}</Text>
+            <Pressable onPress={() => void chooseProfile(profile)} style={[styles.chooseButton, selectedProfileId === profile.id && styles.chooseButtonActive]}>
+              <Text style={[styles.chooseText, selectedProfileId === profile.id && styles.chooseTextActive]}>{selectedProfileId === profile.id ? '✓ انتخاب‌شده برای اتصال' : 'انتخاب برای اتصال'}</Text>
+            </Pressable>
           </View>
         ))}
         <View style={styles.footnote}><Text style={styles.footnoteText}>در این مرحله ورود و نگهداری کانفیگ و دریافت اشتراک فعال است. اتصال تونل تا تکمیل ادغام موتور Xray و سرویس VPN اندروید فعال نخواهد شد.</Text></View>
@@ -215,6 +227,10 @@ const styles = StyleSheet.create({
   protocolText: { color: c.blue, fontSize: 10, fontWeight: '800' },
   remove: { color: c.red, fontSize: 25, paddingHorizontal: 4 },
   source: { color: c.dim, textAlign: 'right', fontSize: 10, marginTop: 10 },
+  chooseButton: { marginTop: 12, paddingVertical: 10, borderRadius: 10, alignItems: 'center', borderWidth: 1, borderColor: c.border, backgroundColor: c.card },
+  chooseButtonActive: { borderColor: '#398D70', backgroundColor: '#123128' },
+  chooseText: { color: c.muted, fontSize: 11, fontWeight: '700' },
+  chooseTextActive: { color: c.green },
   footnote: { backgroundColor: '#111C29', borderRadius: 13, padding: 13, marginTop: 18, borderWidth: 1, borderColor: c.border },
   footnoteText: { color: c.muted, textAlign: 'right', fontSize: 11, lineHeight: 20 },
   modalBackdrop: { flex: 1, justifyContent: 'flex-end', backgroundColor: '#000A' },
