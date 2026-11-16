@@ -32,10 +32,17 @@ async function readIndex(): Promise<ProfileIndex> {
   try {
     const parsed = JSON.parse(raw) as { profiles?: ProfileMeta[]; subscriptions?: SavedSubscription[] };
     const metadata = Array.isArray(parsed.profiles) ? parsed.profiles : [];
-    const profiles = await Promise.all(metadata.map(async (profile) => ({
-      ...profile,
-      raw: await SecureStore.getItemAsync(PROFILE_KEY(profile.id)) ?? '',
-    })));
+    // Read each secret independently. A single corrupt/missing SecureStore entry
+    // must not make the entire profile library appear empty.
+    const profiles = await Promise.all(metadata.map(async (profile) => {
+      let raw = '';
+      try {
+        raw = await SecureStore.getItemAsync(PROFILE_KEY(profile.id)) ?? '';
+      } catch {
+        // Keep loading the remaining profiles; this entry will be skipped below.
+      }
+      return { ...profile, raw };
+    }));
     return {
       profiles: profiles.filter((profile) => profile.raw.length > 0),
       subscriptions: Array.isArray(parsed.subscriptions) ? parsed.subscriptions : [],
@@ -138,10 +145,22 @@ export async function addSubscription(inputUrl: string) {
     throw new Error(parsed.errors[0] ?? 'پاسخ اشتراک، لینک قابل‌پشتیبانی ندارد. لینک‌های VLESS/VMess/Trojan/SS یا خروجی Base64 لازم است.');
   }
   const index = await readIndex();
+
+  // Re-importing the same subscription is an update operation, not a fatal duplicate.
+  for (const existingSubscription of index.subscriptions) {
+    const existingUrl = await SecureStore.getItemAsync(SUBSCRIPTION_KEY(existingSubscription.id)).catch(() => null);
+    if (existingUrl === url) {
+      const refreshed = await refreshSubscription(existingSubscription.id);
+      return { added: refreshed.added, skipped: 0, errors: parsed.errors, alreadyImported: true };
+    }
+  }
+
   const id = makeId();
   const existing = new Set(index.profiles.map((profile) => profile.raw));
   const fresh = parsed.profiles.filter((profile) => !existing.has(profile.raw));
-  if (!fresh.length) throw new Error('تمام کانفیگ‌های این اشتراک قبلاً وارد شده‌اند.');
+  if (!fresh.length) {
+    return { added: 0, skipped: parsed.profiles.length, errors: parsed.errors, alreadyImported: true };
+  }
   const saved = fresh.map((profile) => ({
     ...profile, id: makeId(), source: 'subscription' as const, subscriptionId: id, addedAt: Date.now(),
   }));
