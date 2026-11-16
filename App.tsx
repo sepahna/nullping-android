@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import ProfilesScreen from './src/configs/ProfilesScreen';
 import {
   Pressable,
   ScrollView,
@@ -61,7 +62,7 @@ export default function App() {
           </View>
         </View>
         <View style={styles.topActions}>
-          <View style={styles.environment}><View style={styles.environmentDot} /><Text style={styles.environmentText}>نسخه آزمایشی</Text></View>
+          <View style={styles.environment}><View style={styles.environmentDot} /><Text style={styles.environmentText}>مدیریت کانفیگ فعال</Text></View>
           <View style={styles.avatar}><Text style={styles.avatarText}>M</Text></View>
         </View>
       </View>
@@ -80,7 +81,7 @@ export default function App() {
 
       <View style={styles.bottomBar}>
         <NavItem icon="⌂" label="خانه" active={tab === 'home'} onPress={() => setTab('home')} />
-        <NavItem icon="◎" label="سرورها" active={tab === 'servers'} onPress={() => setTab('servers')} />
+        <NavItem icon="◎" label="کانفیگ‌ها" active={tab === 'servers'} onPress={() => setTab('servers')} />
         <NavItem icon="↗" label="گزارش‌ها" active={tab === 'activity'} onPress={() => setTab('activity')} />
         <NavItem icon="⚙" label="تنظیمات" active={tab === 'settings'} onPress={() => setTab('settings')} />
       </View>
