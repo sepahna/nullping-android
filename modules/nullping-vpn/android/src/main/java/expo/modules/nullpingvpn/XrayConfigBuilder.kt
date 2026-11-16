@@ -32,11 +32,11 @@ internal object XrayConfigBuilder {
     val inbounds = JSONArray().put(
       JSONObject()
         .put("tag", "tun")
+        .put("port", 0)
         .put("protocol", "tun")
         .put("settings", JSONObject()
           .put("name", "nullping0")
-          .put("MTU", 1500)
-          .put("userLevel", 8))
+          .put("mtu", 1500))
         .put("sniffing", JSONObject()
           .put("enabled", true)
           .put("destOverride", JSONArray().put("http").put("tls").put("quic")))
