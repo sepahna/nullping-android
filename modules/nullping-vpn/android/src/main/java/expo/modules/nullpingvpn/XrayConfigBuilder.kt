@@ -51,7 +51,15 @@ internal object XrayConfigBuilder {
       .put("log", JSONObject().put("loglevel", "warning"))
       .put("inbounds", inbounds)
       .put("outbounds", outbounds)
-      .put("routing", JSONObject().put("domainStrategy", "AsIs").put("rules", JSONArray()))
+      .put("routing", JSONObject()
+        .put("domainStrategy", "AsIs")
+        // Route every packet received from Android's TUN interface through the selected proxy.
+        .put("rules", JSONArray().put(
+          JSONObject()
+            .put("type", "field")
+            .put("inboundTag", JSONArray().put("tun"))
+            .put("outboundTag", "proxy")
+        )))
       .put("dns", JSONObject().put("servers", JSONArray().put("1.1.1.1").put("1.0.0.1")))
       .toString()
   }
