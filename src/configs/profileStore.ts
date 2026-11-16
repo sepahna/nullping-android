@@ -22,15 +22,21 @@ export type SavedSubscription = {
   profileCount: number;
 };
 
+type ProfileMeta = Omit<SavedProfile, 'raw'>;
 type ProfileIndex = { profiles: SavedProfile[]; subscriptions: SavedSubscription[] };
 
 async function readIndex(): Promise<ProfileIndex> {
   const raw = await AsyncStorage.getItem(INDEX_KEY);
   if (!raw) return { profiles: [], subscriptions: [] };
   try {
-    const parsed = JSON.parse(raw) as ProfileIndex;
+    const parsed = JSON.parse(raw) as { profiles?: ProfileMeta[]; subscriptions?: SavedSubscription[] };
+    const metadata = Array.isArray(parsed.profiles) ? parsed.profiles : [];
+    const profiles = await Promise.all(metadata.map(async (profile) => ({
+      ...profile,
+      raw: await SecureStore.getItemAsync(PROFILE_KEY(profile.id)) ?? '',
+    })));
     return {
-      profiles: Array.isArray(parsed.profiles) ? parsed.profiles : [],
+      profiles: profiles.filter((profile) => profile.raw.length > 0),
       subscriptions: Array.isArray(parsed.subscriptions) ? parsed.subscriptions : [],
     };
   } catch {
@@ -39,7 +45,8 @@ async function readIndex(): Promise<ProfileIndex> {
 }
 
 async function writeIndex(index: ProfileIndex) {
-  await AsyncStorage.setItem(INDEX_KEY, JSON.stringify(index));
+  const profiles: ProfileMeta[] = index.profiles.map(({ raw: _secret, ...metadata }) => metadata);
+  await AsyncStorage.setItem(INDEX_KEY, JSON.stringify({ profiles, subscriptions: index.subscriptions }));
 }
 
 function makeId() {
