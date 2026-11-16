@@ -24,7 +24,7 @@ jobs:
   build:
     name: Build universal Android APK
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 90
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -44,6 +44,29 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: '1.27.0'
+
+      - name: Install Android NDK
+        run: |
+          yes | sdkmanager --licenses >/dev/null
+          sdkmanager "ndk;28.2.13676358"
+          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/28.2.13676358" >> "$GITHUB_ENV"
+          echo "ANDROID_NDK_ROOT=$ANDROID_HOME/ndk/28.2.13676358" >> "$GITHUB_ENV"
+
+      - name: Build Xray core Android library
+        run: |
+          git clone https://github.com/2dust/AndroidLibXrayLite.git "$RUNNER_TEMP/AndroidLibXrayLite"
+          cd "$RUNNER_TEMP/AndroidLibXrayLite"
+          git checkout b5a377087e74eaa34e86718710b04c50f4b767f5
+          go install golang.org/x/mobile/cmd/gomobile@v0.0.0-20261011034528-197770444867
+          go install golang.org/x/mobile/cmd/gobind@v0.0.0-20261011034528-197770444867
+          gomobile init
+          mkdir -p "$GITHUB_WORKSPACE/modules/nullping-vpn/android/libs"
+          gomobile bind -v -androidapi 24 -trimpath -ldflags="-s -w -buildid= -checklinkname=0" -o "$GITHUB_WORKSPACE/modules/nullping-vpn/android/libs/libv2ray.aar" .
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
