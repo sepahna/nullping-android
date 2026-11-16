@@ -1,24 +1,17 @@
 # Null Ping Android — Roadmap
 
-Product scope: a client that imports user-owned VPN profiles/subscriptions and connects through Xray-core.
+Product: v2rayNG-based Android client with a Null Ping UI redesign. Keep existing core, import, subscription, parser and VPN behavior.
 
 | Phase | Scope | Exit condition | Status |
 |---|---|---|---|
-| 0 | Repository audit | State and risks documented | COMPLETED |
-| 1 | Project foundation | Reproducible Expo/RN baseline and CI | NOT STARTED |
-| 2 | Design system/navigation | RTL-ready tested theme/navigation | NOT STARTED |
-| 3 | Dashboard + profile list | Honest empty/disconnected states | NOT STARTED |
-| 4 | Import pipeline | Clipboard/share, QR, file and subscription parsing validated | NOT STARTED |
-| 5 | Local profile storage | Secure local profiles and safe subscription refresh | NOT STARTED |
-| 6 | Kotlin bridge | Typed async bridge and lifecycle tests | NOT STARTED |
-| 7 | Xray integration | Pinned engine packaged and launched | NOT STARTED |
-| 8 | Android VPN service | Real tunnel start/stop/revoke/recovery verified | NOT STARTED |
-| 9 | Endpoint testing | Measured latency with method/source disclosed | NOT STARTED |
-| 10 | Traffic monitoring | Verified throughput and cumulative counters | NOT STARTED |
-| 11 | Interactive globe | Verified endpoint coordinates and performance fallback | NOT STARTED |
-| 12 | Security audit | Findings triaged; blockers closed | NOT STARTED |
-| 13 | Automated testing | Required suites completed | NOT STARTED |
-| 14 | Optimization | Memory, battery and rendering budgets met | NOT STARTED |
-| 15 | Release | Signed artifact and release checklist | NOT STARTED |
+| 0 | Upstream audit | Source, UI contracts, license and build instructions reviewed | COMPLETED |
+| 1 | Import upstream codebase | Source tree and submodule revisions preserved in Null Ping repo | NOT STARTED |
+| 2 | Baseline build | Unmodified upstream-derived debug variant builds | NOT STARTED |
+| 3 | Null Ping design system | Compose theme, colors, typography, RTL and app identity | NOT STARTED |
+| 4 | Main dashboard | New visual layout, existing MainAction/ViewModel wiring intact | NOT STARTED |
+| 5 | Profiles and imports | Profile cards, groups and import flows remain operational | NOT STARTED |
+| 6 | Secondary screens | Settings/subscriptions/routing/logs/backup navigation retained | NOT STARTED |
+| 7 | UI regression and accessibility | Compose tests and device interaction checks completed | NOT STARTED |
+| 8 | Release validation | Gradle build, APK inspection and physical-device test | NOT STARTED |
 
-The core client does not depend on a custom sales backend, server provisioning API or app-owned subscription billing system. UI presence alone does not complete a phase; connection and telemetry claims require measured or verified sources.
+No UI milestone is complete solely from screenshots; action wiring, persistence, focus, accessibility and lifecycle must be tested.
