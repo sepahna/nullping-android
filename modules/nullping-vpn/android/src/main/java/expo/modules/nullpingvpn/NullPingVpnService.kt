@@ -122,6 +122,7 @@ class NullPingVpnService : VpnService() {
   }
 
   companion object {
+    const val ACTION_START = "expo.modules.nullpingvpn.START"
     const val ACTION_STOP = "expo.modules.nullpingvpn.STOP"
     private const val CHANNEL_ID = "nullping-vpn"
     private const val NOTIFICATION_ID = 7812
