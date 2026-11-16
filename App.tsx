@@ -69,12 +69,7 @@ export default function App() {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         {tab === 'home' && <HomeScreen selected={selected} onBrowse={() => setTab('servers')} />}
-        {tab === 'servers' && (
-          <ServersScreen
-            selectedServer={selectedServer}
-            onSelect={setSelectedServer}
-          />
-        )}
+        {tab === 'servers' && <ProfilesScreen />}
         {tab === 'activity' && <ActivityScreen />}
         {tab === 'settings' && <SettingsScreen />}
       </ScrollView>
