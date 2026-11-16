@@ -45,3 +45,12 @@ Files were committed through GitHub. No dependency installation, lockfile genera
 ## Acceptance gate
 
 Phase 1 is complete only after clean install, lockfile, typecheck, lint, tests, Android Gradle build and verified app launch. The current commit is a scaffold, not proof of a successful APK.
+
+
+## Native bridge contract (initial)
+
+The local module package exports:
+- `getVpnStatus()`: validated connection-state string from Kotlin.
+- `getVpnCapabilities()`: platform and explicit implementation flags.
+
+Current Android capability values are all false for VPN permission support, VPN service implementation and Xray integration. This prevents the UI from interpreting successful native-module loading as a working VPN. The bridge still requires an Android prebuild/Gradle build and device verification; no such build has been claimed.
