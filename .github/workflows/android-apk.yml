@@ -69,14 +69,23 @@ jobs:
           go install golang.org/x/mobile/cmd/gomobile@v0.0.0-20261011034528-197770444867
           go install golang.org/x/mobile/cmd/gobind@v0.0.0-20261011034528-197770444867
           gomobile init
-          mkdir -p "$GITHUB_WORKSPACE/modules/nullping-vpn/android/libs"
-          gomobile bind -v -androidapi 24 -trimpath -ldflags="-s -w -buildid= -checklinkname=0" -o "$GITHUB_WORKSPACE/modules/nullping-vpn/android/libs/libv2ray.aar" .
+          LIBS_DIR="$GITHUB_WORKSPACE/modules/nullping-vpn/android/libs"
+          mkdir -p "$LIBS_DIR"
+          gomobile bind -v -androidapi 24 -trimpath -ldflags="-s -w -buildid= -checklinkname=0" -o "$LIBS_DIR/libv2ray.aar" .
+          unzip -p "$LIBS_DIR/libv2ray.aar" classes.jar > "$LIBS_DIR/libv2ray-classes.jar"
+          test -s "$LIBS_DIR/libv2ray-classes.jar"
 
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
       - name: Generate Android project
         run: pnpm exec expo prebuild --platform android --no-install
+
+      - name: Attach Xray runtime AAR to Android app
+        run: |
+          test -s modules/nullping-vpn/android/libs/libv2ray.aar
+          printf '\n// Xray gomobile runtime (kept at app level; module compiles against classes.jar)\ndependencies { implementation files("../../modules/nullping-vpn/android/libs/libv2ray.aar") }\n' >> android/app/build.gradle
+          tail -n 8 android/app/build.gradle
 
       - name: Build release APK
         working-directory: android
