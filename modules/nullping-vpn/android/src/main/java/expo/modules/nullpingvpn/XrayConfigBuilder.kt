@@ -4,7 +4,6 @@ import android.net.Uri
 import android.util.Base64
 import org.json.JSONArray
 import org.json.JSONObject
-import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
 internal object XrayConfigBuilder {
@@ -19,6 +18,8 @@ internal object XrayConfigBuilder {
       "vmess" -> buildVmess(raw)
       "trojan" -> buildTrojan(uri)
       "ss" -> buildShadowsocks(raw)
+      "socks" -> buildSimpleProxy(uri, "socks")
+      "http" -> buildSimpleProxy(uri, "http")
       else -> throw IllegalArgumentException("Unsupported proxy scheme: $scheme")
     }
 
@@ -58,6 +59,7 @@ internal object XrayConfigBuilder {
   private fun buildVless(uri: Uri): Triple<String, JSONObject, JSONObject> {
     val server = uri.host ?: throw IllegalArgumentException("VLESS host is missing")
     val port = uri.port
+    require(port in 1..65_535) { "VLESS port is invalid" }
     val id = uri.userInfo?.substringBefore(':')?.takeIf { it.isNotBlank() }
       ?: throw IllegalArgumentException("VLESS UUID is missing")
     val user = JSONObject().put("id", id).put("encryption", uri.getQueryParameter("encryption") ?: "none")
@@ -89,10 +91,12 @@ internal object XrayConfigBuilder {
 
   private fun buildTrojan(uri: Uri): Triple<String, JSONObject, JSONObject> {
     val server = uri.host ?: throw IllegalArgumentException("Trojan host is missing")
+    val port = uri.port
+    require(port in 1..65_535) { "Trojan port is invalid" }
     val password = uri.userInfo?.takeIf { it.isNotBlank() }
       ?: throw IllegalArgumentException("Trojan password is missing")
     val settings = JSONObject().put("servers", JSONArray().put(
-      JSONObject().put("address", server).put("port", uri.port).put("password", password)
+      JSONObject().put("address", server).put("port", port).put("password", password)
     ))
     return Triple("trojan", settings, buildStreamSettings(uri))
   }
@@ -124,6 +128,22 @@ internal object XrayConfigBuilder {
     return Triple("shadowsocks", settings, JSONObject())
   }
 
+  private fun buildSimpleProxy(uri: Uri, protocol: String): Triple<String, JSONObject, JSONObject> {
+    val server = uri.host ?: throw IllegalArgumentException("$protocol host is missing")
+    val port = uri.port
+    require(port in 1..65_535) { "$protocol port is invalid" }
+    val users = JSONArray()
+    val userInfo = uri.userInfo
+    if (!userInfo.isNullOrBlank()) {
+      val separator = userInfo.indexOf(':')
+      if (separator > 0) {
+        users.put(JSONObject().put("user", userInfo.substring(0, separator)).put("pass", userInfo.substring(separator + 1)))
+      }
+    }
+    val serverConfig = JSONObject().put("address", server).put("port", port)
+    if (users.length() > 0) serverConfig.put("users", users)
+    return Triple(protocol, JSONObject().put("servers", JSONArray().put(serverConfig)), JSONObject())
+  }
   private fun buildStreamSettings(uri: Uri, forcedNetwork: String? = null): JSONObject {
     val network = (forcedNetwork ?: uri.getQueryParameter("type") ?: "tcp").lowercase()
     val security = (uri.getQueryParameter("security") ?: "none").lowercase()
