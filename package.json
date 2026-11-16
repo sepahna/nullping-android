@@ -4,7 +4,10 @@
   "private": true,
   "main": "index.ts",
   "packageManager": "pnpm@10.20.0",
-  "engines": { "node": ">=22.13.0", "pnpm": ">=10.0.0" },
+  "engines": {
+    "node": ">=22.13.0",
+    "pnpm": ">=10.0.0"
+  },
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -17,7 +20,8 @@
   "dependencies": {
     "expo": "~58.0.25",
     "react": "19.3.0",
-    "react-native": "0.88.1"
+    "react-native": "0.88.1",
+    "nullping-vpn": "file:./modules/nullping-vpn"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",
