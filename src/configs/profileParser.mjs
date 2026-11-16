@@ -19,6 +19,7 @@ function safeDecodeBase64(value) {
 function decodeSubscriptionBody(value) {
   const trimmed = value.trim();
   if (!trimmed) return '';
+  if (trimmed.toLowerCase().startsWith('base64:')) return safeDecodeBase64(trimmed.slice(7)) ?? trimmed;
   if (/^(?:vless|vmess|trojan|ss|socks|http):\/\//im.test(trimmed)) return trimmed;
   const decoded = safeDecodeBase64(trimmed);
   if (decoded && /(?:vless|vmess|trojan|ss|socks|http):\/\//i.test(decoded)) return decoded;
