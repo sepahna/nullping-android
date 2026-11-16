@@ -63,6 +63,7 @@ class NullPingVpnService : VpnService() {
       }
       core = Libv2ray.newCoreController(callback)
       core?.startLoop(config, vpnInterface!!.fd)
+      activeController = core
       if (core?.isRunning != true) error("Xray core did not enter running state")
       updateStatus("CONNECTED")
       updateNotification("اتصال برقرار است")
@@ -71,6 +72,7 @@ class NullPingVpnService : VpnService() {
       updateNotification("خطا در اتصال: ${error.message ?: "نامشخص"}")
       runCatching { core?.stopLoop() }
       core = null
+      activeController = null
       runCatching { vpnInterface?.close() }
       vpnInterface = null
       stopSelf()
@@ -81,6 +83,7 @@ class NullPingVpnService : VpnService() {
     updateStatus("DISCONNECTING")
     runCatching { core?.stopLoop() }
     core = null
+    activeController = null
     runCatching { vpnInterface?.close() }
     vpnInterface = null
     updateStatus("DISCONNECTED")
@@ -124,8 +127,14 @@ class NullPingVpnService : VpnService() {
     private const val NOTIFICATION_ID = 7812
 
     @Volatile private var connectionStatus = "DISCONNECTED"
+    @Volatile private var activeController: CoreController? = null
 
     fun currentStatus(): String = connectionStatus
+
+    fun measureDelay(url: String): Long {
+      val controller = activeController ?: throw IllegalStateException("VPN core is not running")
+      return controller.measureDelay(url)
+    }
     fun updateStatus(value: String) { connectionStatus = value }
   }
 }
