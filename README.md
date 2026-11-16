@@ -36,3 +36,7 @@ Use a machine with Android SDK and JDK 17 for native Android builds. The first i
 - [Changelog](CHANGELOG.md)
 
 Never commit production credentials, subscription URLs, private keys, signing keystores or raw proxy configurations. This repository is public.
+
+## Continuous integration
+
+GitHub Actions runs TypeScript, ESLint and unit tests on pushes to development branches and pull requests targeting main. The pnpm cache is intentionally disabled until the first verified lockfile is committed.
