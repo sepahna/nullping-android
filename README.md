@@ -1,32 +1,20 @@
 # Null Ping Android
 
-A client-side Android VPN application. Users import their own VPN profiles or subscription links and connect through the integrated Xray-core engine.
+A Null Ping-branded UI redesign of the upstream [v2rayNG](https://github.com/2dust/v2rayNG) Android client.
 
-> Current status: engineering documentation/bootstrap only. No operational VPN functionality is implemented.
+## Core principle
 
-## Client capabilities (planned)
+Keep the existing v2rayNG Android/Kotlin/Jetpack Compose project, Xray core integration, native VPN services, profile parsers, subscription support, imports and connection logic. Redesign the UI in Compose; do not replace the engine or port the app to React Native.
 
-- Import supported share links, QR codes, local configuration files and subscription URLs
-- Parse, validate, organize, rename and remove local profiles
-- Refresh subscription profiles on user request and a configurable schedule
-- Measure endpoint latency and show the measurement time/source
-- Connect/disconnect using Android VpnService + Xray-core
-- Display real traffic counters, session duration and connection state
-- Optional interactive globe using verified endpoint metadata
+## Status
 
-Supported protocols and configuration formats will be determined by the pinned Xray-core version and verified parser tests. The app must reject unsupported or malformed profiles clearly.
+- Upstream architecture and main UI contracts reviewed.
+- Source import into this repository is not yet complete.
+- UI redesign and APK build have not started.
 
-## Product boundary
+## Reference and license
 
-This is a VPN **client**, not a server control panel or VPN sales backend. No mandatory Null Ping account, custom authentication service, server provisioning API or subscription billing API is required for the core connection flow. A subscription URL is user-imported configuration data, not an app-owned backend.
+Upstream project: https://github.com/2dust/v2rayNG  
+License: GPL-3.0. Preserve upstream notices and satisfy the license when distributing modified binaries/source.
 
-## Engineering documents
-
-- [Engineering Plan](ENGINEERING_PLAN.md)
-- [Architecture](ARCHITECTURE.md)
-- [Roadmap](ROADMAP.md)
-- [Security Policy](SECURITY.md)
-- [Testing Strategy](TESTING.md)
-- [Changelog](CHANGELOG.md)
-
-Never commit real subscription URLs, credentials, private keys or raw production configurations.
+See [ENGINEERING_PLAN.md](ENGINEERING_PLAN.md), [ARCHITECTURE.md](ARCHITECTURE.md) and [ROADMAP.md](ROADMAP.md).
