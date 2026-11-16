@@ -1,71 +1,41 @@
 # Null Ping Android — Architecture
 
-## Product flow
+## Source of truth
+
+The upstream v2rayNG Android project is the application and core foundation. Null Ping changes the presentation layer only.
 
 ```text
-User input
-  ├── share link / clipboard
-  ├── QR code
-  ├── local file
-  └── subscription URL
-          |
-          v
-Import + format detection
-          |
-          v
-Strict parser / validation
-          |
-          v
-Local profile repository (secure handling)
-          |
-          v
-Selected profile -> Xray config adapter
-          |
-          v
-React Native UI -> typed asynchronous native bridge
-                              |
-                              v
-                    Android Kotlin layer
-                    VpnService + consent
-                    foreground notification
-                    TUN + routing/DNS policy
-                    Xray process/controller
-                              |
-                              v
-                       Xray-core data plane
-                              |
-                              v
-                     User's configured endpoint
+Existing v2rayNG Android application (Kotlin)
+  ├── MainActivity (platform permissions / import / service dispatch)
+  ├── MainViewModel + MainAction + MainUiState (authoritative UI state/actions)
+  ├── Existing profile repository + MMKV persistence
+  ├── Existing config parsers / subscription import and refresh
+  ├── Existing QR / clipboard / file import flows
+  ├── Existing Xray core AAR and HEV native components
+  └── Existing VPN / proxy-only / root service lifecycle
+                     |
+                     v
+       Null Ping visual redesign (Jetpack Compose)
+       Theme / typography / RTL / dashboard / profile cards
+       Dispatches existing actions; does not own core logic
 ```
 
 ## Product boundary
 
-Null Ping is a client. It does not provision VPN servers, sell subscriptions, manage a fleet of servers or require an app-owned authentication/billing backend for the core connect flow. Subscription URLs are imported by the user and provide profile data.
+Null Ping is a v2rayNG-derived client. It does not provision VPN servers, sell subscriptions or require a custom backend for the core connect flow. Users provide their own profiles/subscriptions.
 
-## Ownership
+## Preserve existing behavior
 
-- TypeScript: presentation, import UX, profile organization and user-intent orchestration.
-- Kotlin: Android permissions, VpnService, foreground service, TUN descriptors, lifecycle, callbacks and cleanup.
-- Xray-core: proxy/data plane.
-- Local profile repository: user-imported profiles and subscription metadata, with secrets protected at rest.
-- Native/core counters: source for traffic measurements.
+- Existing `MainActivity` remains responsible for Android platform activity results and permission flows.
+- Existing `MainViewModel`, `MainAction`, and `MainUiState` remain the source of truth for main-screen state.
+- Import, editing, sharing, QR, subscription, profile identity and service start/stop remain in upstream owners.
+- Preserve service modes: VPN, proxy-only and root.
+- Preserve upstream submodule gitlinks and generated native inputs. Do not replace native artifacts with guessed binaries.
 
-## Import and profile model
+## UI boundary
 
-Normalize supported input formats into a versioned internal profile model. Preserve source metadata where safe, but never assume arbitrary input fields are trusted. Parser must enforce input size limits, validate required fields and reject unsupported protocols/config variants. The exact protocol/import support matrix is tied to the pinned Xray-core version and automated fixtures.
+Compose UI displays immutable state and dispatches actions. It does not directly manipulate MMKV, repositories, native core or service lifecycles. Follow upstream UI `AGENTS.md` requirements, including resources, accessibility semantics, RTL, focus, keyboard/D-pad behavior and state restoration.
 
-Subscription refresh must be explicit/configurable, bounded by timeouts and response-size limits, and must handle expired/invalid URLs without destroying the last known-good profile set.
+## Package identity
 
-## Connection state contract
-
-`DISCONNECTED`, `CONNECTING`, `CONNECTED`, `RECONNECTING`, `DISCONNECTING`, `ERROR`.
-
-The native layer is authoritative. Emit `CONNECTED` only after service preparation, TUN establishment and engine readiness. All operations require explicit timeout and error mapping; native work must not block the JS thread.
-
-## Telemetry and endpoint metadata
-
-Latency is measured against the selected endpoint using a documented method; distinguish a TCP/HTTP reachability probe from Xray proxy delay. Traffic samples distinguish instantaneous bytes/sec from cumulative session bytes and include timestamps/source. Globe coordinates are optional and must come from verified metadata or a clearly identified geolocation lookup; do not infer exact packet routes.
-
-## Security boundaries
-
-Never log subscription URLs, credentials, full proxy URIs, private keys or raw Xray configs. Store secrets only through platform-backed secure storage. Validate imported/downloaded configuration before engine startup. Redact errors before forwarding them to UI.
+The final application ID may be changed to `ir.nullping.android` only after checking all hard-coded package references, manifest authorities, notification intents, share providers, permissions, deep links, backup rules and flavor/build settings. Package migration is separate from initial UI restyling.
