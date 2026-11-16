@@ -1,41 +1,41 @@
 # Null Ping Android — Architecture
 
-```text
-React Native UI (TypeScript)
-  Screens / Navigation / RTL Design System
-  Zustand state / typed API client / SQLite cache
-  Typed asynchronous native VPN interface
-                 |
-                 v
-Android Kotlin layer
-  VpnService + permission consent + foreground notification
-  TUN lifecycle + routing/DNS policy + network callbacks
-  Xray process/controller + native traffic counters
-                 |
-                 v
-Xray-core data plane -> configured remote endpoint
+## Source of truth
 
-Backend API -> auth / subscriptions / server inventory / configs / usage
+The upstream v2rayNG Android project is the application and core foundation. Null Ping changes the presentation layer only.
+
+```text
+Existing v2rayNG Android application (Kotlin)
+  ├── MainActivity (platform permissions / import / service dispatch)
+  ├── MainViewModel + MainAction + MainUiState (authoritative UI state/actions)
+  ├── Existing profile repository + MMKV persistence
+  ├── Existing config parsers / subscription import and refresh
+  ├── Existing QR / clipboard / file import flows
+  ├── Existing Xray core AAR and HEV native components
+  └── Existing VPN / proxy-only / root service lifecycle
+                     |
+                     v
+       Null Ping visual redesign (Jetpack Compose)
+       Theme / typography / RTL / dashboard / profile cards
+       Dispatches existing actions; does not own core logic
 ```
 
-## Ownership
+## Product boundary
 
-- TypeScript: presentation and user intent orchestration.
-- Kotlin: Android permissions, services, TUN descriptors, lifecycle, callbacks and cleanup.
-- Xray-core: proxy/data plane.
-- Backend: authoritative account, subscription and server inventory.
-- Native/core counters: source for traffic measurements.
+Null Ping is a v2rayNG-derived client. It does not provision VPN servers, sell subscriptions or require a custom backend for the core connect flow. Users provide their own profiles/subscriptions.
 
-## Connection state contract
+## Preserve existing behavior
 
-`DISCONNECTED`, `CONNECTING`, `CONNECTED`, `RECONNECTING`, `DISCONNECTING`, `ERROR`.
+- Existing `MainActivity` remains responsible for Android platform activity results and permission flows.
+- Existing `MainViewModel`, `MainAction`, and `MainUiState` remain the source of truth for main-screen state.
+- Import, editing, sharing, QR, subscription, profile identity and service start/stop remain in upstream owners.
+- Preserve service modes: VPN, proxy-only and root.
+- Preserve upstream submodule gitlinks and generated native inputs. Do not replace native artifacts with guessed binaries.
 
-The native layer is authoritative. Emit `CONNECTED` only after service preparation, TUN establishment and engine readiness. All operations require explicit timeout and error mapping; native work must not block the JS thread.
+## UI boundary
 
-## Data contract principles
+Compose UI displays immutable state and dispatches actions. It does not directly manipulate MMKV, repositories, native core or service lifecycles. Follow upstream UI `AGENTS.md` requirements, including resources, accessibility semantics, RTL, focus, keyboard/D-pad behavior and state restoration.
 
-Server records require stable ID, ISO country code, city, endpoint, protocol, verified coordinates when available, health-check timestamp and measured latency metadata. Unknown values remain unknown. Traffic samples distinguish instantaneous bytes/sec from cumulative session bytes and include timestamps/source.
+## Package identity
 
-## Security boundaries
-
-Never log subscription credentials, full proxy URIs, private keys or raw Xray configs. Store secrets only through platform-backed secure storage. Validate downloaded configurations before engine startup. Redact errors before forwarding them to UI.
+The final application ID may be changed to `ir.nullping.android` only after checking all hard-coded package references, manifest authorities, notification intents, share providers, permissions, deep links, backup rules and flavor/build settings. Package migration is separate from initial UI restyling.
