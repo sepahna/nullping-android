@@ -1,7 +1,6 @@
 # Changelog
 
-All notable changes will be documented here.
-
 ## Unreleased
 
-- Initial Phase 0 engineering documentation.
+- Clarify v2rayNG as the application and engine foundation for a Compose UI redesign.
+- Preserve upstream VPN services, import/subscription behavior and native components.
