@@ -1,55 +1,47 @@
 # Null Ping Android — Engineering Plan
 
-**Status:** Phase 0 audit completed; Phase 1 not started.  
+**Status:** Phase 1 scaffold committed; local verification pending.  
 **Date:** 2026-11-16  
-**Package proposal:** `ir.nullping.android`
+**Android package:** `ir.nullping.android`
 
-## Repository audit
+## Repository
 
 - Public repository: `sepahna/nullping-android`
-- Default branch metadata: `main`
-- Connected GitHub permissions: admin, maintain, push
-- Git repository is empty: no commits, refs, source files, README, dependencies or workflows
-- No source code has been modified and no dependencies have been installed
+- Main branch preserved.
+- Development branch: `develop/phase-1-foundation`
+- Every commit is public. Never commit credentials, subscription URLs, signing keys or raw proxy configurations.
 
-## Architecture decision
+## Stack decision
 
-Use React Native + TypeScript for UI and orchestration; Expo Development Build/prebuild for tooling; Kotlin for Android VPN/service lifecycle; Xray-core as the real data plane. Expo is not a replacement for `VpnService` or native lifecycle management.
+- React Native + TypeScript for UI and orchestration.
+- Expo SDK 58 / React Native 0.88 / React 19.3.
+- Expo prebuild and a local Expo Module for Kotlin integration.
+- Kotlin will own Android VPN permissions, foreground service, TUN lifecycle, routing and cleanup.
+- Xray-core will be integrated as a later data-plane component; it is not included in Phase 1.
+- pnpm 10 and Node.js 22.13+.
+- TypeScript strict mode, ESLint flat config, Node test runner and GitHub Actions.
 
-- State: Zustand
-- Durable non-secret cache: SQLite
-- API: typed REST client with runtime response validation, only after the real backend contract is supplied
-- Charts: React Native Skia after exact Expo/RN version compatibility is pinned
-- Globe: Three.js with a React Native-compatible GL renderer after an Android proof-of-concept; MapLibre RN may be used for detailed maps, not assumed to provide identical globe support across native versions
-- Package manager: pnpm with committed lockfile
-- Tests: Jest, React Native Testing Library, Kotlin tests, Gradle build and real-device VPN tests
+## Phase 1 scaffold
 
-## Critical risks
+- Expo app manifest and entry point.
+- Dark dashboard shell with Persian copy and RTL metadata.
+- Local Kotlin Expo module placeholder; reports only `DISCONNECTED` when later exposed to JS.
+- TypeScript, ESLint, pnpm scripts, unit-test baseline and CI workflow.
+- Git ignore and npm configuration.
 
-1. Xray Android packaging and Go mobile/AAR integration must be researched and pinned before implementation.
-2. VPN permission, TUN lifecycle, foreground service, notification, revoke handling and Android background limits must remain Kotlin-owned.
-3. DNS, IPv4/IPv6 routing and leak prevention need end-to-end tests.
-4. Expo/RN/native dependency versions must be resolved as a compatible matrix before installation.
-5. Globe rendering must be benchmarked on mid-range devices with a low-cost fallback.
-6. Backend endpoints must not be invented; obtain its OpenAPI/spec and sanitized examples first.
-7. Public repo means every commit is public; secrets, subscription URLs and production configs must never be committed.
+## Not yet verified
 
-## Roadmap
+Files were committed through GitHub. No dependency installation, lockfile generation, Android Gradle build, emulator run or physical-device test has been performed in this environment. CI temporarily installs without a frozen lockfile until a generated pnpm lockfile is committed.
 
-- Phase 0 — Repository audit: COMPLETED
-- Phase 1 — Foundation: minimal Expo/RN TypeScript scaffold, conventions, scripts, Android baseline and CI
-- Phase 2 — Design system/navigation: premium theme, Persian RTL, localization
-- Phase 3 — Dashboard: truthful disconnected/empty states, no fake telemetry
-- Phase 4 — API/local storage: actual backend contract, auth, secure credential storage
-- Phase 5 — Kotlin bridge: typed async commands/events and lifecycle contract
-- Phase 6–7 — Xray + VPN service: real tunnel proof and failure/revoke/recovery tests
-- Phase 8 — Server management: verified metadata and measured health/latency
-- Phase 9 — Traffic monitoring: measured throughput and cumulative counters
-- Phase 10 — 3D globe: verified geodata and performance fallback
-- Phase 11 — Subscription integration
-- Phase 12–14 — Security, automated testing and optimization
-- Phase 15 — Signed APK/AAB and release checklist
+## Next actions
 
-## Phase 1 acceptance
+1. Clone this branch and run `corepack enable`, `pnpm install`, `pnpm typecheck`, `pnpm lint`, `pnpm test`.
+2. Fix dependency or TypeScript issues and commit `pnpm-lock.yaml`.
+3. Install `expo-dev-client` using `npx expo install expo-dev-client`.
+4. Run `pnpm prebuild:android` and `pnpm android` with Android SDK/JDK 17.
+5. Verify local Expo module autolinking and Kotlin compilation.
+6. Only then begin the full design system and native VPN lifecycle work.
 
-Reproducible pnpm install; strict TypeScript check; ESLint; Jest baseline; Android Gradle debug build; CI for install/lint/typecheck/tests; Persian RTL foundation; no VPN feature marked operational before native device verification.
+## Acceptance gate
+
+Phase 1 is complete only after clean install, lockfile, typecheck, lint, tests, Android Gradle build and verified app launch. The current commit is a scaffold, not proof of a successful APK.
