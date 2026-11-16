@@ -13,10 +13,6 @@ internal object XrayConfigBuilder {
     require(raw.isNotEmpty() && raw.length <= 16_384) { "Invalid or oversized proxy URI" }
     val scheme = raw.substringBefore("://", "").lowercase()
     val uri = Uri.parse(raw)
-    val server = uri.host?.trim()?.removePrefix("[")?.removeSuffix("]")
-      ?: throw IllegalArgumentException("Proxy server address is missing")
-    val port = uri.port
-    require(port in 1..65_535) { "Proxy server port is invalid" }
 
     val (protocol, settings, transport) = when (scheme) {
       "vless" -> buildVless(uri)
