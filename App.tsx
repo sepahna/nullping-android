@@ -12,7 +12,7 @@ const palette = {
 export default function App() {
   return (
     <View style={styles.screen}>
-      <StatusBar barStyle="light-content" backgroundColor={palette.bg} />
+      <StatusBar barStyle="light-content" />
       <View style={styles.header}>
         <View style={styles.logo}><Text style={styles.logoText}>N</Text></View>
         <View>
