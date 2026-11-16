@@ -143,8 +143,8 @@ function HomeScreen({ onBrowse }: { onBrowse: () => void }) {
 
       <SectionHeading title="پروفایل‌های اتصال" subtitle="کانفیگ‌ها را از بخش مدیریت وارد کن" action="مدیریت" onAction={onBrowse} />
       <Pressable style={styles.noticeCard} onPress={onBrowse}>
-        <Text style={styles.noticeTitle}>هنوز کانفیگی انتخاب نشده</Text>
-        <Text style={styles.noticeText}>برای افزودن لینک تکی یا اشتراک و مدیریت سرورها وارد بخش کانفیگ‌ها شو.</Text>
+        <Text style={styles.noticeTitle}>{profile ? "پروفایل انتخاب‌شده" : "هنوز کانفیگی انتخاب نشده"}</Text>
+        <Text style={styles.noticeText}>{profile ? profile.name + " · " + profile.protocol + " · " + profile.server + ":" + profile.port : "برای افزودن لینک تکی یا اشتراک و مدیریت سرورها وارد بخش کانفیگ‌ها شو."}</Text>
       </Pressable>
 
       <SectionHeading title="آمار شبکه" subtitle="پس از اتصال نمایش داده می‌شود" />
