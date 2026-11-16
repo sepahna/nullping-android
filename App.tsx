@@ -12,16 +12,6 @@ import {
 
 type Tab = 'home' | 'servers' | 'activity' | 'settings';
 
-type Server = {
-  id: string;
-  flag: string;
-  city: string;
-  country: string;
-  region: string;
-  latency: string;
-  load: string;
-};
-
 const colors = {
   background: '#070B12',
   surface: '#0D1520',
@@ -37,16 +27,8 @@ const colors = {
   orange: '#F2B76B',
 };
 
-const servers: Server[] = [
-  { id: 'de-fra', flag: '🇩🇪', city: 'فرانکفورت', country: 'آلمان', region: 'اروپا', latency: '—', load: 'نامشخص' },
-  { id: 'nl-ams', flag: '🇳🇱', city: 'آمستردام', country: 'هلند', region: 'اروپا', latency: '—', load: 'نامشخص' },
-  { id: 'tr-ist', flag: '🇹🇷', city: 'استانبول', country: 'ترکیه', region: 'آسیا', latency: '—', load: 'نامشخص' },
-  { id: 'fi-hel', flag: '🇫🇮', city: 'هلسینکی', country: 'فنلاند', region: 'اروپا', latency: '—', load: 'نامشخص' },
-];
-
 export default function App() {
   const [tab, setTab] = useState<Tab>('home');
-  const selected = servers[0]!;
 
   return (
     <View style={styles.screen}>
@@ -65,12 +47,15 @@ export default function App() {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        {tab === 'home' && <HomeScreen selected={selected} onBrowse={() => setTab('servers')} />}
-        {tab === 'servers' && <ProfilesScreen />}
-        {tab === 'activity' && <ActivityScreen />}
-        {tab === 'settings' && <SettingsScreen />}
-      </ScrollView>
+      {tab === 'servers' ? (
+        <ProfilesScreen />
+      ) : (
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          {tab === 'home' && <HomeScreen onBrowse={() => setTab('servers')} />}
+          {tab === 'activity' && <ActivityScreen />}
+          {tab === 'settings' && <SettingsScreen />}
+        </ScrollView>
+      )}
 
       <View style={styles.bottomBar}>
         <NavItem icon="⌂" label="خانه" active={tab === 'home'} onPress={() => setTab('home')} />
@@ -82,7 +67,7 @@ export default function App() {
   );
 }
 
-function HomeScreen({ selected, onBrowse }: { selected: Server; onBrowse: () => void }) {
+function HomeScreen({ onBrowse }: { onBrowse: () => void }) {
   return (
     <>
       <View style={styles.welcome}>
@@ -117,18 +102,10 @@ function HomeScreen({ selected, onBrowse }: { selected: Server; onBrowse: () => 
         <Text style={styles.honestNote}>این نسخه هنوز تونل VPN ایجاد نمی‌کند.</Text>
       </View>
 
-      <SectionHeading title="سرور انتخاب‌شده" action="تغییر سرور" onAction={onBrowse} />
-      <Pressable style={styles.selectedServer} onPress={onBrowse}>
-        <View style={styles.serverFlag}><Text style={styles.flagText}>{selected.flag}</Text></View>
-        <View style={styles.serverMain}>
-          <Text style={styles.serverCity}>{selected.city}</Text>
-          <Text style={styles.serverCountry}>{selected.country} · {selected.region}</Text>
-        </View>
-        <View style={styles.serverMetric}>
-          <Text style={styles.metricNumber}>{selected.latency}</Text>
-          <Text style={styles.metricCaption}>پینگ</Text>
-        </View>
-        <Text style={styles.chevron}>‹</Text>
+      <SectionHeading title="پروفایل‌های اتصال" subtitle="کانفیگ‌ها را از بخش مدیریت وارد کن" action="مدیریت" onAction={onBrowse} />
+      <Pressable style={styles.noticeCard} onPress={onBrowse}>
+        <Text style={styles.noticeTitle}>هنوز کانفیگی انتخاب نشده</Text>
+        <Text style={styles.noticeText}>برای افزودن لینک تکی یا اشتراک و مدیریت سرورها وارد بخش کانفیگ‌ها شو.</Text>
       </Pressable>
 
       <SectionHeading title="آمار شبکه" subtitle="پس از اتصال نمایش داده می‌شود" />
