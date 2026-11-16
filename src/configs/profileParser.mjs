@@ -4,8 +4,8 @@ function decodeBase64Utf8(value) {
   const normalized = value.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, '');
   const padded = normalized.padEnd(Math.ceil(normalized.length / 4) * 4, '=');
   const binary = atob(padded);
-  const bytes = Uint8Array.from(binary, (character) => character.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
+  const encoded = Array.from(binary, (character) => `%${character.charCodeAt(0).toString(16).padStart(2, '0')}`).join('');
+  return decodeURIComponent(encoded);
 }
 
 function safeDecodeBase64(value) {
