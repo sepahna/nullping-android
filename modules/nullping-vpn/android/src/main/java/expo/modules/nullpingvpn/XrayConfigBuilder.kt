@@ -84,7 +84,7 @@ internal object XrayConfigBuilder {
     val settings = JSONObject().put("vnext", JSONArray().put(
       JSONObject().put("address", server).put("port", port).put("users", JSONArray().put(user))
     ))
-    val query = Uri.parse("https://nullping.invalid/?type=${json.optString("net")}&security=${if (json.optString("tls") == "tls") "tls" else "none"}&sni=${Uri.encode(json.optString("sni"))}&host=${Uri.encode(json.optString("host"))}&path=${Uri.encode(json.optString("path"))}")
+    val query = Uri.parse("https://nullping.invalid/?type=${json.optString("net")}&security=${if (json.optString("tls") == "tls") "tls" else "none"}&sni=${Uri.encode(json.optString("sni"))}&fp=${Uri.encode(json.optString("fp"))}&host=${Uri.encode(json.optString("host"))}&path=${Uri.encode(json.optString("path"))}")
     val stream = buildStreamSettings(query, json.optString("net").ifBlank { "tcp" })
     return Triple("vmess", settings, stream)
   }
@@ -157,6 +157,9 @@ internal object XrayConfigBuilder {
           .put("path", uri.getQueryParameter("path") ?: "/")
           .put("headers", headers))
       }
+      "http", "h2" -> stream.put("httpSettings", JSONObject()
+        .put("path", uri.getQueryParameter("path") ?: "/")
+        .put("host", JSONArray(listOf(uri.getQueryParameter("host") ?: ""))))
       "grpc" -> stream.put("grpcSettings", JSONObject()
         .put("serviceName", uri.getQueryParameter("serviceName") ?: uri.getQueryParameter("service-name") ?: "")
         .put("multiMode", uri.getQueryParameter("mode") == "multi"))
