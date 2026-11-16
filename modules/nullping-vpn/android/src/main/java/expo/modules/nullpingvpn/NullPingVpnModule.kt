@@ -30,6 +30,10 @@ class NullPingVpnModule : Module() {
       "CONNECTING"
     }
 
+    AsyncFunction("measureDelay") { url: String ->
+      NullPingVpnService.measureDelay(url)
+    }
+
     AsyncFunction("stopVpn") {
       val context = appContext.currentActivity ?: appContext.applicationContext
       val intent = Intent(context, NullPingVpnService::class.java)
