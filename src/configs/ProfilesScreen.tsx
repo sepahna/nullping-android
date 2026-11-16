@@ -99,7 +99,7 @@ export default function ProfilesScreen({ onSelectProfile }: { onSelectProfile?: 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <Text style={styles.eyebrow}>PROFILES / CONFIGURATION</Text>
         <Text style={styles.title}>کانفیگ‌های من</Text>
-        <Text style={styles.subtitle}>لینک تکی یا آدرس اشتراک را وارد کن. اطلاعات هر کانفیگ روی دستگاه ذخیره می‌شود.</Text>
+        <Text style={styles.subtitle}>لینک تکی یا آدرس اشتراک را وارد کن. اطلاعات هر کانفیگ به‌صورت محلی و امن روی دستگاه ذخیره می‌شود.</Text>
 
         <View style={styles.actions}>
           <Pressable style={styles.primaryButton} onPress={() => openImport('config')}>
@@ -140,7 +140,7 @@ export default function ProfilesScreen({ onSelectProfile }: { onSelectProfile?: 
           <Text style={styles.count}>{profiles.length}</Text>
         </View>
         {profiles.length === 0 ? (
-          <View style={styles.empty}><Text style={styles.emptyTitle}>لیست سرورها خالی است</Text><Text style={styles.emptyText}>برای شروع، یک لینک VLESS یا VMess یا آدرس اشتراک وارد کن.</Text></View>
+          <View style={styles.empty}><Text style={styles.emptyTitle}>لیست سرورها خالی است</Text><Text style={styles.emptyText}>برای شروع، یک لینک VLESS، VMess، Trojan، Shadowsocks یا آدرس اشتراک وارد کن.</Text></View>
         ) : profiles.map((profile) => (
           <View key={profile.id} style={styles.profileCard}>
             <View style={styles.profileTop}>
@@ -157,7 +157,7 @@ export default function ProfilesScreen({ onSelectProfile }: { onSelectProfile?: 
             </Pressable>
           </View>
         ))}
-        <View style={styles.footnote}><Text style={styles.footnoteText}>در این مرحله ورود و نگهداری کانفیگ و دریافت اشتراک فعال است. اتصال تونل تا تکمیل ادغام موتور Xray و سرویس VPN اندروید فعال نخواهد شد.</Text></View>
+        <View style={styles.footnote}><Text style={styles.footnoteText}>پروفایل‌ها روی دستگاه ذخیره می‌شوند. برای اتصال، یک کانفیگ را انتخاب کن و از صفحه اصلی دکمه اتصال را بزن. پشتیبانی از لینک‌های VLESS، VMess، Trojan، Shadowsocks، SOCKS و HTTP فعال است؛ فایل‌های Clash و QR هنوز اضافه نشده‌اند.</Text></View>
       </ScrollView>
 
       <Modal visible={modalOpen} animationType="slide" transparent onRequestClose={() => setModalOpen(false)}>
@@ -165,7 +165,7 @@ export default function ProfilesScreen({ onSelectProfile }: { onSelectProfile?: 
           <View style={styles.modal}>
             <View style={styles.modalHandle} />
             <Text style={styles.modalTitle}>{mode === 'config' ? 'افزودن کانفیگ' : 'افزودن اشتراک'}</Text>
-            <Text style={styles.modalHint}>{mode === 'config' ? 'لینک VLESS، VMess، Trojan یا Shadowsocks را جای‌گذاری کن. چند لینک را می‌توانی در خط‌های جدا وارد کنی.' : 'لینک Subscription را وارد کن؛ برنامه محتوای آن را دریافت و کانفیگ‌های قابل‌شناسایی را استخراج می‌کند.'}</Text>
+            <Text style={styles.modalHint}>{mode === 'config' ? 'لینک VLESS، VMess، Trojan، Shadowsocks، SOCKS یا HTTP را جای‌گذاری کن. چند لینک را می‌توانی در خط‌های جدا وارد کنی.' : 'لینک Subscription را وارد کن؛ برنامه محتوای آن را دریافت و کانفیگ‌های قابل‌شناسایی را استخراج می‌کند.'}</Text>
             <TextInput
               value={value}
               onChangeText={setValue}
