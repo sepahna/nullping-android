@@ -157,9 +157,12 @@ function HomeScreen({ selected, onBrowse }: { selected: Server; onBrowse: () => 
 
 function ServersScreen({ selectedServer, onSelect }: { selectedServer: string; onSelect: (id: string) => void }) {
   const [query, setQuery] = useState('');
-  const filteredServers = servers.filter((server) =>
-    `${server.city} ${server.country}`.toLowerCase().includes(query.trim().toLowerCase()),
-  );
+  const [region, setRegion] = useState<'همه' | 'اروپا' | 'آسیا'>('همه');
+  const filteredServers = servers.filter((server) => {
+    const matchesQuery = `${server.city} ${server.country}`.toLowerCase().includes(query.trim().toLowerCase());
+    const matchesRegion = region === 'همه' || server.region === region;
+    return matchesQuery && matchesRegion;
+  });
 
   return (
     <>
@@ -182,6 +185,20 @@ function ServersScreen({ selectedServer, onSelect }: { selectedServer: string; o
         {query.length > 0 ? (
           <Pressable onPress={() => setQuery('')}><Text style={styles.clearSearch}>×</Text></Pressable>
         ) : <Text style={styles.searchShortcut}>⌕</Text>}
+      </View>
+      <View style={styles.filterRow}>
+        {(['همه', 'اروپا', 'آسیا'] as const).map((item) => (
+          <Pressable
+            key={item}
+            onPress={() => setRegion(item)}
+            style={[styles.filterChip, region === item && styles.filterChipActive]}
+            accessibilityRole="button"
+            accessibilityState={{ selected: region === item }}
+          >
+            <Text style={[styles.filterChipText, region === item && styles.filterChipTextActive]}>{item}</Text>
+          </Pressable>
+        ))}
+        <Text style={styles.resultCount}>{filteredServers.length} موقعیت</Text>
       </View>
       <View style={styles.mapPlaceholder}>
         <View style={styles.mapGrid} />
@@ -395,6 +412,12 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, color: colors.text, fontSize: 10, paddingVertical: 0, textAlign: 'right' },
   clearSearch: { color: colors.muted, fontSize: 18, paddingHorizontal: 3 },
   searchShortcut: { color: colors.dim, fontSize: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 5, paddingHorizontal: 5, paddingVertical: 3 },
+  filterRow: { flexDirection: 'row', alignItems: 'center', gap: 7, marginTop: 11 },
+  filterChip: { borderWidth: 1, borderColor: colors.border, borderRadius: 18, paddingHorizontal: 13, paddingVertical: 7, backgroundColor: colors.card },
+  filterChipActive: { borderColor: '#398D70', backgroundColor: '#123128' },
+  filterChipText: { color: colors.muted, fontSize: 9 },
+  filterChipTextActive: { color: colors.green, fontWeight: '800' },
+  resultCount: { color: colors.dim, fontSize: 8, marginLeft: 'auto' },
   mapPlaceholder: { height: 190, borderRadius: 19, backgroundColor: '#0C1B24', borderWidth: 1, borderColor: colors.border, marginTop: 13, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   mapGrid: { ...StyleSheet.absoluteFill, opacity: 0.45, borderWidth: 1, borderColor: '#1D3543' },
   mapOrb: { width: 126, height: 126, borderRadius: 63, borderWidth: 1, borderColor: '#2E5860', backgroundColor: '#102D37', alignItems: 'center', justifyContent: 'center' },
