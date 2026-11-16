@@ -46,9 +46,7 @@ const servers: Server[] = [
 
 export default function App() {
   const [tab, setTab] = useState<Tab>('home');
-  const [selectedServer, setSelectedServer] = useState('de-fra');
-
-  const selected = servers.find((server) => server.id === selectedServer) ?? servers[0]!;
+  const selected = servers[0]!;
 
   return (
     <View style={styles.screen}>
@@ -146,88 +144,6 @@ function HomeScreen({ selected, onBrowse }: { selected: Server; onBrowse: () => 
           <Text style={styles.infoTitle}>شفافیت در اطلاعات</Text>
           <Text style={styles.infoText}>هیچ سرعت، پینگ یا وضعیت سروری به‌صورت ساختگی نمایش داده نمی‌شود.</Text>
         </View>
-      </View>
-    </>
-  );
-}
-
-function ServersScreen({ selectedServer, onSelect }: { selectedServer: string; onSelect: (id: string) => void }) {
-  const [query, setQuery] = useState('');
-  const [region, setRegion] = useState<'همه' | 'اروپا' | 'آسیا'>('همه');
-  const filteredServers = servers.filter((server) => {
-    const matchesQuery = `${server.city} ${server.country}`.toLowerCase().includes(query.trim().toLowerCase());
-    const matchesRegion = region === 'همه' || server.region === region;
-    return matchesQuery && matchesRegion;
-  });
-
-  return (
-    <>
-      <View style={styles.pageHeader}>
-        <Text style={styles.eyebrow}>LOCATIONS / 01</Text>
-        <Text style={styles.pageTitle}>انتخاب موقعیت</Text>
-        <Text style={styles.pageDescription}>موقعیت دلخواه را انتخاب کن. اطلاعات این فهرست فعلاً نمونه‌ی رابط کاربری است.</Text>
-      </View>
-      <View style={styles.searchPlaceholder}>
-        <Text style={styles.searchIcon}>⌕</Text>
-        <TextInput
-          value={query}
-          onChangeText={setQuery}
-          placeholder="جست‌وجوی کشور یا شهر"
-          placeholderTextColor={colors.dim}
-          style={styles.searchInput}
-          textAlign="right"
-          returnKeyType="search"
-        />
-        {query.length > 0 ? (
-          <Pressable onPress={() => setQuery('')}><Text style={styles.clearSearch}>×</Text></Pressable>
-        ) : <Text style={styles.searchShortcut}>⌕</Text>}
-      </View>
-      <View style={styles.filterRow}>
-        {(['همه', 'اروپا', 'آسیا'] as const).map((item) => (
-          <Pressable
-            key={item}
-            onPress={() => setRegion(item)}
-            style={[styles.filterChip, region === item && styles.filterChipActive]}
-            accessibilityRole="button"
-            accessibilityState={{ selected: region === item }}
-          >
-            <Text style={[styles.filterChipText, region === item && styles.filterChipTextActive]}>{item}</Text>
-          </Pressable>
-        ))}
-        <Text style={styles.resultCount}>{filteredServers.length} موقعیت</Text>
-      </View>
-      <View style={styles.mapPlaceholder}>
-        <View style={styles.mapGrid} />
-        <View style={styles.mapOrb}><View style={styles.mapOrbInner}><Text style={styles.mapGlobe}>◎</Text></View></View>
-        <View style={styles.mapPinOne}><Text>🇩🇪</Text></View>
-        <View style={styles.mapPinTwo}><Text>🇳🇱</Text></View>
-        <View style={styles.mapPinThree}><Text>🇹🇷</Text></View>
-        <Text style={styles.mapCaption}>نمای نقشه تعاملی در مرحله بعد اضافه می‌شود</Text>
-      </View>
-      <SectionHeading title="موقعیت‌های پیشنهادی" subtitle="نمونه‌های نمایشی · بدون سرور فعال" />
-      {filteredServers.map((server) => {
-        const isSelected = server.id === selectedServer;
-        return (
-          <Pressable key={server.id} style={[styles.locationCard, isSelected && styles.locationCardSelected]} onPress={() => onSelect(server.id)}>
-            <View style={styles.serverFlag}><Text style={styles.flagText}>{server.flag}</Text></View>
-            <View style={styles.serverMain}>
-              <Text style={styles.serverCity}>{server.city}</Text>
-              <Text style={styles.serverCountry}>{server.country} · {server.region}</Text>
-            </View>
-            <View style={styles.serverMetric}>
-              <Text style={styles.metricNumber}>{server.latency}</Text>
-              <Text style={styles.metricCaption}>پینگ</Text>
-            </View>
-            <View style={[styles.radioOuter, isSelected && styles.radioOuterActive]}>{isSelected && <View style={styles.radioInner} />}</View>
-          </Pressable>
-        );
-      })}
-      {filteredServers.length === 0 ? (
-        <View style={styles.noticeCard}><Text style={styles.noticeText}>موقعیتی با این نام پیدا نشد.</Text></View>
-      ) : null}
-      <View style={styles.noticeCard}>
-        <Text style={styles.noticeTitle}>انتخاب سرور به معنی اتصال نیست</Text>
-        <Text style={styles.noticeText}>تا زمان اتصال به API و دریافت فهرست واقعی سرورها، این گزینه‌ها صرفاً برای بررسی تجربه کاربری هستند.</Text>
       </View>
     </>
   );
