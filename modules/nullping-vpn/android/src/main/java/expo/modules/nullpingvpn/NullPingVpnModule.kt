@@ -8,9 +8,17 @@ class NullPingVpnModule : Module() {
     Name("NullPingVpn")
 
     AsyncFunction("getStatus") {
-      // This only proves the native module is available.
-      // It does not mean a VPN tunnel is running.
+      // Native bridge availability is not evidence of an active VPN tunnel.
       "DISCONNECTED"
+    }
+
+    AsyncFunction("getCapabilities") {
+      mapOf(
+        "platform" to "android",
+        "vpnPermissionSupported" to false,
+        "vpnServiceImplemented" to false,
+        "xrayCoreIntegrated" to false,
+      )
     }
   }
 }
