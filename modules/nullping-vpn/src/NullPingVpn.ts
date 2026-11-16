@@ -20,6 +20,7 @@ type NativeNullPingVpn = {
   getCapabilities(): Promise<VpnCapabilities>;
   startVpn(config: string): Promise<string>;
   stopVpn(): Promise<string>;
+  measureDelay(url: string): Promise<number>;
 };
 
 const nativeModule = requireNativeModule<NativeNullPingVpn>('NullPingVpn');
@@ -62,4 +63,9 @@ export async function stopVpn(): Promise<VpnConnectionStatus> {
     throw new Error(`Unknown VPN status returned by native module: ${status}`);
   }
   return status as VpnConnectionStatus;
+}
+
+/** Measures HTTP reachability through the running Xray outbound. */
+export function measureVpnDelay(url = 'https://www.gstatic.com/generate_204'): Promise<number> {
+  return nativeModule.measureDelay(url);
 }
