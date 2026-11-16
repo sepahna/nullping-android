@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import ProfilesScreen from './src/configs/ProfilesScreen';
 import { getSelectedProfile, type SavedProfile } from './src/configs/profileStore';
-import { getVpnStatus, startVpn, stopVpn, type VpnConnectionStatus } from 'nullping-vpn';
+import { getVpnStatus, measureVpnDelay, startVpn, stopVpn, type VpnConnectionStatus } from 'nullping-vpn';
 import {
   Alert,
   Pressable,
@@ -73,6 +73,8 @@ function HomeScreen({ onBrowse }: { onBrowse: () => void }) {
   const [profile, setProfile] = useState<SavedProfile | null>(null);
   const [status, setStatus] = useState<VpnConnectionStatus>('DISCONNECTED');
   const [busy, setBusy] = useState(false);
+  const [testing, setTesting] = useState(false);
+  const [latency, setLatency] = useState<number | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -98,13 +100,37 @@ function HomeScreen({ onBrowse }: { onBrowse: () => void }) {
     if (!profile) { onBrowse(); return; }
     setBusy(true);
     try {
-      if (connected) await stopVpn();
-      else await startVpn(profile.raw);
+      if (connected) { await stopVpn(); setLatency(null); }
+      else { await startVpn(profile.raw); setLatency(null); }
       setStatus(await getVpnStatus());
     } catch (error) {
       Alert.alert('خطا در اتصال', error instanceof Error ? error.message : 'امکان شروع اتصال وجود ندارد.');
       setStatus('ERROR');
     } finally { setBusy(false); }
+  };
+
+  const testConnection = async () => {
+    setTesting(true);
+    setLatency(null);
+    const endpoints = [
+      'https://www.gstatic.com/generate_204',
+      'https://cp.cloudflare.com/generate_204',
+    ];
+    let lastError: unknown;
+    try {
+      for (const endpoint of endpoints) {
+        try {
+          const delay = await measureVpnDelay(endpoint);
+          setLatency(delay);
+          return;
+        } catch (error) {
+          lastError = error;
+        }
+      }
+      Alert.alert('آزمون اینترنت ناموفق بود', lastError instanceof Error ? lastError.message : 'تونل فعال است اما مقصد آزمایش پاسخ نداد.');
+    } finally {
+      setTesting(false);
+    }
   };
 
   return (
@@ -139,6 +165,11 @@ function HomeScreen({ onBrowse }: { onBrowse: () => void }) {
           <Text style={styles.lockIcon}>{pending ? '…' : connected ? 'Ⅱ' : '↗'}</Text>
         </Pressable>
         <Text style={styles.honestNote}>{profile ? profile.protocol + ' · ' + profile.server + ':' + profile.port : 'هیچ پروفایل فعالی انتخاب نشده است.'}</Text>
+        {connected && (
+          <Pressable style={styles.testConnectionButton} onPress={() => void testConnection()} disabled={testing}>
+            <Text style={styles.testConnectionText}>{testing ? 'در حال سنجش مسیر واقعی…' : latency === null ? 'آزمایش دسترسی اینترنت از تونل' : 'پاسخ مقصد: ' + latency + ' ms · آزمایش دوباره'}</Text>
+          </Pressable>
+        )}
       </View>
 
       <SectionHeading title="پروفایل‌های اتصال" subtitle="کانفیگ‌ها را از بخش مدیریت وارد کن" action="مدیریت" onAction={onBrowse} />
@@ -215,7 +246,7 @@ function SettingsScreen() {
       </View>
       <View style={styles.noticeCard}>
         <Text style={styles.noticeTitle}>نسخه توسعه</Text>
-        <Text style={styles.noticeText}>این بیلد برای توسعه رابط کاربری است. تنظیمات شبکه و امنیتی هنوز به سرویس بومی اندروید متصل نشده‌اند.</Text>
+        <Text style={styles.noticeText}>این نسخه از سرویس VPN بومی اندروید و موتور Xray استفاده می‌کند. آزمون تأخیر از داخل موتور انجام می‌شود؛ محافظت هنگام قطع تونل و آمار لحظه‌ای هنوز در دست توسعه‌اند.</Text>
       </View>
     </>
   );
@@ -305,6 +336,8 @@ const styles = StyleSheet.create({
   disabledButton: { width: '100%', backgroundColor: '#20342F', borderRadius: 14, paddingVertical: 14, paddingHorizontal: 14, marginTop: 18, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, opacity: 0.75 },
   disabledButtonText: { color: '#A9D9C7', fontSize: 11, fontWeight: '800' },
   lockIcon: { color: colors.green, fontSize: 16 },
+  testConnectionButton: { marginTop: 14, paddingVertical: 12, borderRadius: 12, borderWidth: 1, borderColor: '#315E52', backgroundColor: '#10241F', alignItems: 'center' },
+  testConnectionText: { color: colors.green, fontSize: 11, fontWeight: '700' },
   honestNote: { color: colors.dim, fontSize: 8, marginTop: 10 },
   sectionHeading: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 25, marginBottom: 11 },
   sectionTitle: { color: colors.text, fontSize: 13, fontWeight: '800', textAlign: 'right' },
