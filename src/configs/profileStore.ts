@@ -64,15 +64,25 @@ function validateSubscriptionUrl(value: string) {
 }
 
 async function downloadSubscription(url: string) {
-  const response = await fetch(url, {
-    headers: { Accept: 'text/plain, */*', 'User-Agent': 'NullPing-Android/0.2' },
-  });
-  if (!response.ok) throw new Error(`دریافت اشتراک ناموفق بود (HTTP ${response.status}).`);
-  const text = await response.text();
-  if (new TextEncoder().encode(text).length > MAX_SUBSCRIPTION_BYTES) {
-    throw new Error('حجم پاسخ اشتراک بیشتر از یک مگابایت است.');
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 25_000);
+  try {
+    const response = await fetch(url, {
+      headers: { Accept: 'text/plain, */*', 'User-Agent': 'NullPing-Android/0.2' },
+      signal: controller.signal,
+    });
+    if (!response.ok) throw new Error(`دریافت اشتراک ناموفق بود (HTTP ${response.status}).`);
+    const announcedLength = Number(response.headers.get('content-length') ?? 0);
+    if (announcedLength > MAX_SUBSCRIPTION_BYTES) throw new Error('حجم پاسخ اشتراک بیشتر از یک مگابایت است.');
+    const text = await response.text();
+    if (text.length > MAX_SUBSCRIPTION_BYTES) throw new Error('حجم پاسخ اشتراک بیشتر از یک مگابایت است.');
+    return text;
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') throw new Error('دریافت اشتراک پس از ۲۵ ثانیه متوقف شد.');
+    throw error;
+  } finally {
+    clearTimeout(timeout);
   }
-  return text;
 }
 
 async function saveProfiles(index: ProfileIndex, profiles: SavedProfile[]) {
@@ -187,6 +197,8 @@ export async function refreshSubscription(id: string) {
   const subscriptions = index.subscriptions.map((item) => item.id === id
     ? { ...item, lastUpdated: Date.now(), profileCount: keep.length + additions.length }
     : item);
+  const selectedId = await AsyncStorage.getItem(SELECTED_PROFILE_KEY);
+  if (removed.some((item) => item.id === selectedId)) await AsyncStorage.removeItem(SELECTED_PROFILE_KEY);
   await writeIndex({
     profiles: [...keep, ...additions, ...index.profiles.filter((item) => item.subscriptionId !== id)],
     subscriptions,
