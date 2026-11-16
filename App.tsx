@@ -47,7 +47,7 @@ export default function App() {
   const [tab, setTab] = useState<Tab>('home');
   const [selectedServer, setSelectedServer] = useState('de-fra');
 
-  const selected = servers.find((server) => server.id === selectedServer) ?? servers[0];
+  const selected = servers.find((server) => server.id === selectedServer) ?? servers[0]!;
 
   return (
     <View style={styles.screen}>
@@ -396,7 +396,7 @@ const styles = StyleSheet.create({
   clearSearch: { color: colors.muted, fontSize: 18, paddingHorizontal: 3 },
   searchShortcut: { color: colors.dim, fontSize: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 5, paddingHorizontal: 5, paddingVertical: 3 },
   mapPlaceholder: { height: 190, borderRadius: 19, backgroundColor: '#0C1B24', borderWidth: 1, borderColor: colors.border, marginTop: 13, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
-  mapGrid: { ...StyleSheet.absoluteFillObject, opacity: 0.45, borderWidth: 1, borderColor: '#1D3543' },
+  mapGrid: { ...StyleSheet.absoluteFill, opacity: 0.45, borderWidth: 1, borderColor: '#1D3543' },
   mapOrb: { width: 126, height: 126, borderRadius: 63, borderWidth: 1, borderColor: '#2E5860', backgroundColor: '#102D37', alignItems: 'center', justifyContent: 'center' },
   mapOrbInner: { width: 96, height: 96, borderRadius: 48, borderWidth: 1, borderColor: '#3D6B70', alignItems: 'center', justifyContent: 'center' },
   mapGlobe: { color: '#75B8A8', fontSize: 58 },
