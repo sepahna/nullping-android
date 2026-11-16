@@ -52,7 +52,9 @@ export default function ProfilesScreen({ onSelectProfile }: { onSelectProfile?: 
         setMessage(`${result.added} کانفیگ اضافه شد.${result.skipped ? ` ${result.skipped} مورد تکراری بود.` : ''}`);
       } else {
         const result = await addSubscription(value);
-        setMessage(`اشتراک دریافت شد؛ ${result.added} کانفیگ اضافه شد.`);
+        setMessage(result.alreadyImported && result.added === 0
+          ? `این اشتراک یا کانفیگ‌های آن قبلاً وارد شده‌اند؛ مورد تکراری دوباره ساخته نشد. ${result.skipped ?? 0} مورد تکراری بود.`
+          : `اشتراک دریافت شد؛ ${result.added} کانفیگ جدید اضافه شد.`);
       }
       await reload();
       setValue('');
