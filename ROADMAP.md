@@ -3,17 +3,17 @@
 | Phase | Scope | Exit condition | Status |
 |---|---|---|---|
 | 0 | Repository audit | State and risks documented | COMPLETED |
-| 1 | Project foundation | Install, lockfile, lint, typecheck, tests, Android build and launch | SCAFFOLDED — ANDROID BUILD PENDING |
-| 2 | Design system/navigation | RTL-ready tested theme/navigation | PARTIAL — FOUR-SCREEN NAVIGATION SHELL |
+| 1 | Project foundation | Install, lockfile, lint, typecheck, tests, Android build and launch | IMPLEMENTED — BUILD VERIFICATION PENDING |
+| 2 | Design system/navigation | RTL-ready tested theme/navigation | PARTIAL — RTL SHELL + PROFILE MANAGER |
 | 3 | Dashboard | Real disconnected/empty states | UI IMPLEMENTED — NATIVE DATA PENDING |
 | 4 | API/local storage | Backend contract validated; secure auth/cache | NOT STARTED |
-| 5 | Kotlin bridge | Typed async bridge and lifecycle tests | PARTIAL — STATUS + CAPABILITY API |
-| 6 | Xray integration | Pinned engine packaged and launched | NOT STARTED |
-| 7 | VPN service | Real tunnel start/stop/revoke/recovery verified | NOT STARTED |
-| 8 | Server management | Verified server inventory and measured health | PLACEHOLDER UI ONLY |
+| 5 | Kotlin bridge | Typed async bridge and lifecycle tests | IMPLEMENTED — START/STOP/STATUS API; DEVICE TEST PENDING |
+| 6 | Xray integration | Pinned engine packaged and launched | IMPLEMENTED IN CODE — GOMOBILE AAR BUILD PENDING |
+| 7 | VPN service | Real tunnel start/stop/revoke/recovery verified | SERVICE CODE ADDED — DEVICE VERIFICATION PENDING |
+| 8 | Server management | Verified server inventory and measured health | PROFILE IMPORT/LIST/SELECT IMPLEMENTED; HEALTH TEST PENDING |
 | 9 | Traffic monitoring | Verified throughput and cumulative counters | EMPTY STATES ONLY |
 | 10 | Interactive globe | Verified locations and performance fallback | MAP PLACEHOLDER ONLY |
-| 11 | Subscription | Actual backend integration | NOT STARTED |
+| 11 | Subscription | Actual backend integration | URL IMPORT + MANUAL REFRESH IMPLEMENTED; AUTO-REFRESH PENDING |
 | 12 | Security audit | Findings triaged; blockers closed | NOT STARTED |
 | 13 | Automated testing | Required suites completed | BASELINE CREATED; CI PASSING |
 | 14 | Optimization | Memory, battery and rendering budgets met | NOT STARTED |
@@ -21,11 +21,11 @@
 
 ## Current UI milestone
 
-The app now contains a Persian RTL-oriented four-tab shell: Home, Servers, Activity and Settings. Server selection is interactive, but the displayed locations are sample UI data only. Ping, load, traffic and connection state are deliberately not fabricated. The globe area is a placeholder, not a geographic map.
+The app now contains a Persian RTL-oriented dashboard and a real local profile manager. It accepts VLESS, VMess, Trojan, Shadowsocks, SOCKS and HTTP links, including Base64-encoded subscription responses. Raw profile links and subscription URLs are stored in Android-backed SecureStore. Manual refresh reconciles a subscription's profile list. Clash YAML, QR scanning, subscription auto-refresh and live ping/traffic telemetry are not implemented yet.
 
-UI presence alone does not complete a phase. VPN, telemetry, availability and location claims require measured or verified sources.
+The native Kotlin path now creates an Android VPN permission flow, foreground `VpnService`, TUN interface and starts the pinned Xray controller through a gomobile AAR built in CI. The service code and generated config still need a successful CI build and physical-device verification. A running service alone is not proof that the remote proxy is reachable.
 
 
 ## Native bridge milestone
 
-The local Expo module now exposes a typed JavaScript API for the native connection status and an explicit capability report. The current Android implementation truthfully reports that VPN permission handling, the foreground VPN service and Xray integration are not implemented. This is a bridge contract only; it does not start a tunnel.
+The local Expo module exposes typed status/capability methods plus `startVpn(rawProxyUri)` and `stopVpn()`. Kotlin builds an Xray JSON configuration, requests Android VPN permission, creates a foreground `VpnService`, and starts the Xray core from the pinned AndroidLibXrayLite source. The AAR/APK build and physical-device tunnel tests are still pending.
