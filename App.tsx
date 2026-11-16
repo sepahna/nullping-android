@@ -4,6 +4,7 @@ import {
   ScrollView,
   StatusBar,
   StyleSheet,
+  TextInput,
   Text,
   View,
 } from 'react-native';
@@ -155,6 +156,11 @@ function HomeScreen({ selected, onBrowse }: { selected: Server; onBrowse: () => 
 }
 
 function ServersScreen({ selectedServer, onSelect }: { selectedServer: string; onSelect: (id: string) => void }) {
+  const [query, setQuery] = useState('');
+  const filteredServers = servers.filter((server) =>
+    `${server.city} ${server.country}`.toLowerCase().includes(query.trim().toLowerCase()),
+  );
+
   return (
     <>
       <View style={styles.pageHeader}>
@@ -164,8 +170,18 @@ function ServersScreen({ selectedServer, onSelect }: { selectedServer: string; o
       </View>
       <View style={styles.searchPlaceholder}>
         <Text style={styles.searchIcon}>⌕</Text>
-        <Text style={styles.searchText}>جست‌وجوی کشور یا شهر</Text>
-        <Text style={styles.searchShortcut}>⌘ K</Text>
+        <TextInput
+          value={query}
+          onChangeText={setQuery}
+          placeholder="جست‌وجوی کشور یا شهر"
+          placeholderTextColor={colors.dim}
+          style={styles.searchInput}
+          textAlign="right"
+          returnKeyType="search"
+        />
+        {query.length > 0 ? (
+          <Pressable onPress={() => setQuery('')}><Text style={styles.clearSearch}>×</Text></Pressable>
+        ) : <Text style={styles.searchShortcut}>⌕</Text>}
       </View>
       <View style={styles.mapPlaceholder}>
         <View style={styles.mapGrid} />
@@ -176,7 +192,7 @@ function ServersScreen({ selectedServer, onSelect }: { selectedServer: string; o
         <Text style={styles.mapCaption}>نمای نقشه تعاملی در مرحله بعد اضافه می‌شود</Text>
       </View>
       <SectionHeading title="موقعیت‌های پیشنهادی" subtitle="نمونه‌های نمایشی · بدون سرور فعال" />
-      {servers.map((server) => {
+      {filteredServers.map((server) => {
         const isSelected = server.id === selectedServer;
         return (
           <Pressable key={server.id} style={[styles.locationCard, isSelected && styles.locationCardSelected]} onPress={() => onSelect(server.id)}>
@@ -193,6 +209,9 @@ function ServersScreen({ selectedServer, onSelect }: { selectedServer: string; o
           </Pressable>
         );
       })}
+      {filteredServers.length === 0 ? (
+        <View style={styles.noticeCard}><Text style={styles.noticeText}>موقعیتی با این نام پیدا نشد.</Text></View>
+      ) : null}
       <View style={styles.noticeCard}>
         <Text style={styles.noticeTitle}>انتخاب سرور به معنی اتصال نیست</Text>
         <Text style={styles.noticeText}>تا زمان اتصال به API و دریافت فهرست واقعی سرورها، این گزینه‌ها صرفاً برای بررسی تجربه کاربری هستند.</Text>
@@ -373,7 +392,8 @@ const styles = StyleSheet.create({
   pageHeader: { alignItems: 'flex-end', marginBottom: 19 },
   searchPlaceholder: { flexDirection: 'row', alignItems: 'center', backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1, borderRadius: 13, paddingHorizontal: 13, paddingVertical: 12 },
   searchIcon: { color: colors.muted, fontSize: 19, marginRight: 9 },
-  searchText: { flex: 1, color: colors.dim, fontSize: 10, textAlign: 'right' },
+  searchInput: { flex: 1, color: colors.text, fontSize: 10, paddingVertical: 0, textAlign: 'right' },
+  clearSearch: { color: colors.muted, fontSize: 18, paddingHorizontal: 3 },
   searchShortcut: { color: colors.dim, fontSize: 8, borderWidth: 1, borderColor: colors.border, borderRadius: 5, paddingHorizontal: 5, paddingVertical: 3 },
   mapPlaceholder: { height: 190, borderRadius: 19, backgroundColor: '#0C1B24', borderWidth: 1, borderColor: colors.border, marginTop: 13, overflow: 'hidden', alignItems: 'center', justifyContent: 'center' },
   mapGrid: { ...StyleSheet.absoluteFillObject, opacity: 0.45, borderWidth: 1, borderColor: '#1D3543' },
