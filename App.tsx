@@ -1,6 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import ProfilesScreen from './src/configs/ProfilesScreen';
+import { getSelectedProfile, type SavedProfile } from './src/configs/profileStore';
+import { getVpnStatus, startVpn, stopVpn, type VpnConnectionStatus } from 'nullping-vpn';
 import {
+  Alert,
   Pressable,
   ScrollView,
   StatusBar,
@@ -47,7 +50,7 @@ export default function App() {
       </View>
 
       {tab === 'servers' ? (
-        <ProfilesScreen />
+        <ProfilesScreen onSelectProfile={() => setTab('home')} />
       ) : (
         <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
           {tab === 'home' && <HomeScreen onBrowse={() => setTab('servers')} />}
@@ -67,6 +70,43 @@ export default function App() {
 }
 
 function HomeScreen({ onBrowse }: { onBrowse: () => void }) {
+  const [profile, setProfile] = useState<SavedProfile | null>(null);
+  const [status, setStatus] = useState<VpnConnectionStatus>('DISCONNECTED');
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    getSelectedProfile().then((selected) => { if (active) setProfile(selected); }).catch(() => undefined);
+    const syncStatus = async () => {
+      try {
+        const next = await getVpnStatus();
+        if (active) setStatus(next);
+      } catch {
+        if (active) setStatus('ERROR');
+      }
+    };
+    void syncStatus();
+    const timer = setInterval(() => { void syncStatus(); }, 1500);
+    return () => { active = false; clearInterval(timer); };
+  }, []);
+
+  const connected = status === 'CONNECTED';
+  const pending = status === 'CONNECTING' || status === 'DISCONNECTING' || busy;
+  const statusLabel = connected ? 'متصل' : pending ? 'در حال اتصال' : status === 'ERROR' ? 'خطا در اتصال' : 'قطع شده';
+
+  const handleConnection = async () => {
+    if (!profile) { onBrowse(); return; }
+    setBusy(true);
+    try {
+      if (connected) await stopVpn();
+      else await startVpn(profile.raw);
+      setStatus(await getVpnStatus());
+    } catch (error) {
+      Alert.alert('خطا در اتصال', error instanceof Error ? error.message : 'امکان شروع اتصال وجود ندارد.');
+      setStatus('ERROR');
+    } finally { setBusy(false); }
+  };
+
   return (
     <>
       <View style={styles.welcome}>
@@ -74,13 +114,13 @@ function HomeScreen({ onBrowse }: { onBrowse: () => void }) {
           <Text style={styles.eyebrow}>NULL PING / DASHBOARD</Text>
           <Text style={styles.pageTitle}>اتصال امن،{ '\n' }بدون پیچیدگی.</Text>
         </View>
-        <View style={styles.liveBadge}><View style={styles.liveDot} /><Text style={styles.liveText}>آفلاین</Text></View>
+        <View style={styles.liveBadge}><View style={[styles.liveDot, connected && { backgroundColor: colors.green }]} /><Text style={styles.liveText}>{statusLabel}</Text></View>
       </View>
 
       <View style={styles.heroCard}>
         <View style={styles.heroTop}>
           <Text style={styles.cardEyebrow}>وضعیت تونل</Text>
-          <View style={styles.disconnectedPill}><View style={styles.disconnectedDot} /><Text style={styles.disconnectedText}>قطع شده</Text></View>
+          <View style={styles.disconnectedPill}><View style={[styles.disconnectedDot, connected && { backgroundColor: colors.green }]} /><Text style={styles.disconnectedText}>{statusLabel}</Text></View>
         </View>
         <View style={styles.signalVisual}>
           <View style={styles.signalRingOuter}>
@@ -92,13 +132,13 @@ function HomeScreen({ onBrowse }: { onBrowse: () => void }) {
           </View>
           <View style={styles.signalOrbitDot} />
         </View>
-        <Text style={styles.heroTitle}>آماده‌ی اتصال</Text>
-        <Text style={styles.heroDescription}>برای فعال شدن اتصال، ابتدا موتور VPN و مجوز اندروید باید راه‌اندازی شوند.</Text>
-        <View style={styles.disabledButton}>
-          <Text style={styles.disabledButtonText}>اتصال در نسخه بعد فعال می‌شود</Text>
-          <Text style={styles.lockIcon}>⌑</Text>
-        </View>
-        <Text style={styles.honestNote}>این نسخه هنوز تونل VPN ایجاد نمی‌کند.</Text>
+        <Text style={styles.heroTitle}>{connected ? 'اتصال برقرار است' : pending ? 'در حال آماده‌سازی تونل' : 'آماده‌ی اتصال'}</Text>
+        <Text style={styles.heroDescription}>{profile ? profile.name : 'برای شروع، ابتدا یک کانفیگ یا اشتراک اضافه و انتخاب کن.'}</Text>
+        <Pressable style={[styles.disabledButton, connected && { backgroundColor: '#3B2028' }, (!profile && !pending) && { opacity: 0.9 }]} onPress={() => void handleConnection()} disabled={pending}>
+          <Text style={styles.disabledButtonText}>{pending ? 'لطفاً صبر کن…' : connected ? 'قطع اتصال' : profile ? 'اتصال به سرور' : 'افزودن کانفیگ'}</Text>
+          <Text style={styles.lockIcon}>{pending ? '…' : connected ? 'Ⅱ' : '↗'}</Text>
+        </Pressable>
+        <Text style={styles.honestNote}>{profile ? profile.protocol + ' · ' + profile.server + ':' + profile.port : 'هیچ پروفایل فعالی انتخاب نشده است.'}</Text>
       </View>
 
       <SectionHeading title="پروفایل‌های اتصال" subtitle="کانفیگ‌ها را از بخش مدیریت وارد کن" action="مدیریت" onAction={onBrowse} />
