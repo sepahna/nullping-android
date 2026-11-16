@@ -13,6 +13,9 @@ android {
   }
 }
 
+// Compile against the generated Java bindings without making this library
+// module embed a local AAR inside its own AAR. The full AAR is added to the
+// application module by the Android build workflow.
 dependencies {
-  implementation fileTree(dir: 'libs', include: ['*.aar'])
+  compileOnly files('libs/libv2ray-classes.jar')
 }
