@@ -1,36 +1,38 @@
 # Null Ping Android — Architecture
 
+## Current foundation
+
 ```text
 React Native UI (TypeScript)
-  Screens / Navigation / RTL Design System
-  Zustand state / typed API client / SQLite cache
-  Typed asynchronous native VPN interface
-                 |
-                 v
-Android Kotlin layer
-  VpnService + permission consent + foreground notification
-  TUN lifecycle + routing/DNS policy + network callbacks
-  Xray process/controller + native traffic counters
-                 |
-                 v
-Xray-core data plane -> configured remote endpoint
+  App shell / Persian RTL presentation
+  typed UI components and state (future)
+              |
+              v
+Expo local module (Kotlin)
+  Phase 1: module discovery stub only
+              |
+              v
+Future Android VPN layer
+  VpnService / user consent / foreground notification / TUN
+              |
+              v
+Future Xray-core data plane
 
-Backend API -> auth / subscriptions / server inventory / configs / usage
+Future backend API -> auth / subscriptions / server inventory / configs / usage
 ```
 
 ## Ownership
 
 - TypeScript: presentation and user intent orchestration.
 - Kotlin: Android permissions, services, TUN descriptors, lifecycle, callbacks and cleanup.
-- Xray-core: proxy/data plane.
-- Backend: authoritative account, subscription and server inventory.
-- Native/core counters: source for traffic measurements.
+- Xray-core: proxy/data plane; not yet integrated.
+- Backend: authoritative account, subscription and server inventory; API contract not yet supplied.
 
 ## Connection state contract
 
 `DISCONNECTED`, `CONNECTING`, `CONNECTED`, `RECONNECTING`, `DISCONNECTING`, `ERROR`.
 
-The native layer is authoritative. Emit `CONNECTED` only after service preparation, TUN establishment and engine readiness. All operations require explicit timeout and error mapping; native work must not block the JS thread.
+The native layer is authoritative. Emit `CONNECTED` only after service preparation, TUN establishment and engine readiness. The Phase 1 Kotlin stub is not yet exposed to the UI and does not create a tunnel.
 
 ## Data contract principles
 
