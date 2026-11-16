@@ -5,7 +5,6 @@ import {
   ScrollView,
   StatusBar,
   StyleSheet,
-  TextInput,
   Text,
   View,
 } from 'react-native';
