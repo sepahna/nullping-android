@@ -246,10 +246,9 @@ function ActivityScreen() {
         <Text style={styles.pageDescription}>نمایی از وضعیت و عملکرد اتصال شما.</Text>
       </View>
       <View style={styles.emptyChart}>
-        <View style={styles.chartBars}>
-          {[34, 58, 43, 76, 48, 64, 38, 86, 52, 69, 42, 60].map((height, index) => (
-            <View key={index} style={[styles.chartBar, { height }]} />
-          ))}
+        <View style={styles.chartEmptyVisual}>
+          <Text style={styles.chartEmptyIcon}>⌁</Text>
+          <Text style={styles.chartEmptyLabel}>منتظر داده واقعی</Text>
         </View>
         <Text style={styles.emptyChartTitle}>هنوز داده‌ای ثبت نشده</Text>
         <Text style={styles.emptyChartText}>نمودار پس از راه‌اندازی تونل و دریافت آمار واقعی فعال خواهد شد.</Text>
@@ -436,8 +435,9 @@ const styles = StyleSheet.create({
   noticeTitle: { color: colors.text, fontSize: 10, fontWeight: '800', textAlign: 'right' },
   noticeText: { color: colors.muted, fontSize: 9, lineHeight: 18, textAlign: 'right', marginTop: 5 },
   emptyChart: { backgroundColor: colors.card, borderRadius: 19, borderWidth: 1, borderColor: colors.border, padding: 17, alignItems: 'center' },
-  chartBars: { height: 110, width: '100%', flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-around', borderBottomWidth: 1, borderColor: colors.border, paddingHorizontal: 8, marginBottom: 18 },
-  chartBar: { width: 9, borderRadius: 5, backgroundColor: '#234A40', opacity: 0.55 },
+  chartEmptyVisual: { height: 110, width: '100%', borderRadius: 13, borderWidth: 1, borderStyle: 'dashed', borderColor: '#2A3D4D', backgroundColor: '#0D1824', alignItems: 'center', justifyContent: 'center', marginBottom: 18 },
+  chartEmptyIcon: { color: '#547A70', fontSize: 32 },
+  chartEmptyLabel: { color: colors.dim, fontSize: 9, marginTop: 5 },
   emptyChartTitle: { color: colors.text, fontSize: 12, fontWeight: '800' },
   emptyChartText: { color: colors.muted, fontSize: 9, lineHeight: 17, textAlign: 'center', marginTop: 6 },
   summaryGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 9, marginTop: 13 },
