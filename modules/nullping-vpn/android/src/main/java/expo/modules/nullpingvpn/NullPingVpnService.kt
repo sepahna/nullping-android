@@ -46,7 +46,9 @@ class NullPingVpnService : VpnService() {
         .setSession("Null Ping")
         .setMtu(1500)
         .addAddress("10.88.0.1", 30)
+        .addAddress("fd00:88::1", 126)
         .addRoute("0.0.0.0", 0)
+        .addRoute("::", 0)
         .addDnsServer("1.1.1.1")
         .addDnsServer("1.0.0.1")
       runCatching { builder.addDisallowedApplication(packageName) }
@@ -92,7 +94,7 @@ class NullPingVpnService : VpnService() {
   }
 
   override fun onDestroy() {
-    stopTunnel()
+    if (core != null || vpnInterface != null) stopTunnel()
     super.onDestroy()
   }
 
@@ -117,7 +119,6 @@ class NullPingVpnService : VpnService() {
   }
 
   companion object {
-    const val ACTION_START = "expo.modules.nullpingvpn.START"
     const val ACTION_STOP = "expo.modules.nullpingvpn.STOP"
     private const val CHANNEL_ID = "nullping-vpn"
     private const val NOTIFICATION_ID = 7812
