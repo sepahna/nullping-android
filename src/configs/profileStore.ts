@@ -3,6 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 import { parseConfigInput, type ParsedProxyProfile } from './profileParser.mjs';
 
 const INDEX_KEY = 'nullping.profile-index.v1';
+const SELECTED_PROFILE_KEY = 'nullping.profile-selected.v1';
 const PROFILE_KEY = (id: string) => `nullping.profile.${id}`;
 const SUBSCRIPTION_KEY = (id: string) => `nullping.subscription.${id}`;
 const MAX_SUBSCRIPTION_BYTES = 1024 * 1024;
@@ -90,6 +91,19 @@ export async function getProfileRaw(id: string): Promise<string | null> {
   return SecureStore.getItemAsync(PROFILE_KEY(id));
 }
 
+export async function selectProfile(id: string) {
+  const index = await readIndex();
+  if (!index.profiles.some((profile) => profile.id === id)) throw new Error('کانفیگ انتخاب‌شده پیدا نشد.');
+  await AsyncStorage.setItem(SELECTED_PROFILE_KEY, id);
+}
+
+export async function getSelectedProfile(): Promise<SavedProfile | null> {
+  const id = await AsyncStorage.getItem(SELECTED_PROFILE_KEY);
+  if (!id) return null;
+  const index = await readIndex();
+  return index.profiles.find((profile) => profile.id === id) ?? null;
+}
+
 export async function addManualConfig(input: string) {
   const parsed = parseConfigInput(input);
   if (parsed.profiles.length === 0) {
@@ -136,6 +150,7 @@ export async function removeProfile(id: string) {
   const profile = index.profiles.find((item) => item.id === id);
   if (!profile) return;
   await SecureStore.deleteItemAsync(PROFILE_KEY(id));
+  if (await AsyncStorage.getItem(SELECTED_PROFILE_KEY) === id) await AsyncStorage.removeItem(SELECTED_PROFILE_KEY);
   await writeIndex({ ...index, profiles: index.profiles.filter((item) => item.id !== id) });
 }
 
@@ -144,6 +159,8 @@ export async function removeSubscription(id: string) {
   const owned = index.profiles.filter((item) => item.subscriptionId === id);
   await Promise.all(owned.map((item) => SecureStore.deleteItemAsync(PROFILE_KEY(item.id))));
   await SecureStore.deleteItemAsync(SUBSCRIPTION_KEY(id));
+  const selectedId = await AsyncStorage.getItem(SELECTED_PROFILE_KEY);
+  if (owned.some((profile) => profile.id === selectedId)) await AsyncStorage.removeItem(SELECTED_PROFILE_KEY);
   await writeIndex({
     profiles: index.profiles.filter((item) => item.subscriptionId !== id),
     subscriptions: index.subscriptions.filter((item) => item.id !== id),
