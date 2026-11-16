@@ -51,7 +51,9 @@ class NullPingVpnService : VpnService() {
         .addRoute("::", 0)
         .addDnsServer("1.1.1.1")
         .addDnsServer("1.0.0.1")
-      runCatching { builder.addDisallowedApplication(packageName) }
+      // Keep Xray's own outbound sockets outside the TUN to prevent a routing loop.
+      // Do not swallow this error: a tunnel without this exclusion may never reach its server.
+      builder.addDisallowedApplication(packageName)
       vpnInterface = builder.establish() ?: error("Android did not establish the VPN interface")
 
       Seq.setContext(applicationContext)
