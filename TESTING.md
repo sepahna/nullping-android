@@ -1,15 +1,25 @@
 # Null Ping Android — Testing Strategy
 
-## Every change
+## Phase 1 baseline
 
-- TypeScript strict typecheck
-- ESLint
-- Jest unit tests
-- React Native Testing Library for interactive components
-- Kotlin unit tests for native state/validation helpers
-- Android Gradle debug build after native/dependency changes
+- TypeScript strict typecheck.
+- ESLint flat config.
+- Node built-in unit tests.
+- GitHub Actions quality workflow.
 
-## VPN integration matrix
+## Local commands
+
+```bash
+corepack enable
+pnpm install
+pnpm typecheck
+pnpm lint
+pnpm test
+pnpm prebuild:android
+pnpm android
+```
+
+## VPN integration matrix (future phases)
 
 Permission granted/denied/revoked; connect/disconnect/reconnect; invalid config/unreachable endpoint/auth failure; Wi-Fi/cellular transitions; airplane mode; process death/service recreation; system-settings disconnect; notification actions; DNS and IPv4/IPv6 behavior; route exclusions; leak tests; repeated lifecycle operations without descriptor/socket/service leaks.
 
